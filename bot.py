@@ -273,7 +273,7 @@ def on_message(message):
         for key,value in functions.iteritems():
             if (key in options or not options):
                 reply += "**!" + key + "**:\t" + value + "\n\n"
-        reply += "Made by @Laurens. Donations to https://www.paypal.me/laurensv"
+        reply += "Made by @Laurens. Donations to https://www.paypal.me/laurensm1"
         client.send_message(message.channel, reply.encode('utf-8'))
 
 @client.event
