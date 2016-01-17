@@ -2,14 +2,14 @@ import discord
 import logging
 import requests
 import getpass
-import urllib2,cookielib
+import urllib2
 from BeautifulSoup import BeautifulSoup
 
 # Set up the logging module to output diagnostic to the console.
 logging.basicConfig()
 
 client = discord.Client()
-email = "laurensverspeek@outlook.com"
+email = ""
 password = ""
 
 if not email:
@@ -46,7 +46,7 @@ def on_message(message):
             		regions.append('us')
             	else:
                 	regions.append(arg.lower())
-            elif (arg.lower() in ['--exact', '--first', '--all']):
+            elif (arg.lower() in ['--exact', '--first', '--all', '--more']):
                 options.append(arg.lower())
             else: 
                 user_name_list += arg + " " 
@@ -75,26 +75,27 @@ def on_message(message):
                     url = 'http://www.brawlhalla.com/rankings/'+region+'/'+mode+'/?p=' + user_name
                     response = requests.get(url)
                     if(response.status_code == 200):
-                        parsed_html = BeautifulSoup(response.content)
+                        parsed_html = BeautifulSoup(response.content,convertEntities=BeautifulSoup.HTML_ENTITIES)
                         users_temp =  parsed_html.body.findAll('td', attrs={'class':'pnameleft'})
                         if not users_temp:
                             continue
                         
                         users = []
 
-                        if ('--exact' not in options or '--all' in options):
+                        if ('--first' in options or '--more' in options or '--all' in options):
                             # add first result to the list                        
                             users.append(users_temp.pop(0))
-                        if ('--first' not in options or '--all' in options):
+                        if ('--exact' in options or '--all' in options):
                             # add exact results to the list                        
                             for user in users_temp:
                                 if(user.text.lower() == user_name.lower()):
                                     users.append(user)
-                        elif ('--exact' in options):
-                            #both first and exact are in options, check first result
-                            user = users_temp.pop(0)
-                            if(user.text.lower() == user_name.lower()):
-                                users.append(user)
+                        if ('--more' in options or '--all' in options):
+                            # add more results to the list                        
+                            for user in users_temp:
+                                if(user_name.lower() in user.text.lower().split(" ")):
+                                    users.append(user)
+
                             
                         if not users:
                             continue
@@ -139,6 +140,9 @@ def on_message(message):
         urls['youtube'] = "https://www.youtube.com/user/brawlhalla"
         urls['facebook'] = "https://www.facebook.com/Brawlhalla/"
         urls['web'] = "http://steamcommunity.com/groups/WEUB"
+        urls['donate'] = "https://www.paypal.me/laurensm1"
+        urls['brawlmance'] = "http://brawlmance.com/"
+        
         
         reply = "Useful links:"
         for name,url in urls.iteritems():
@@ -262,7 +266,7 @@ def on_message(message):
             options.append(arg.lower())
             
         functions = {}
-        functions['rank'] = "Get rankings for brawlhalla\n\t\t\tArguments (order not important):\n\t\t\t\tyour **username** (defaults to discord username)(use && for multiple usernames)\n\t\t\t\t**1v1**, **2v2**(defaults to **1v1**)\n\t\t\t\t**eu, us, sea** (defaults to all)\n\t\t\t\t**--exact** (for only exact username matches)\n\t\t\t\t**--first** (for the first result) (defaults to --first)\n\t\t\t\t**--all** (for both exact and the first result)"
+        functions['rank'] = "Get rankings for brawlhalla\n\t\t\tArguments (order not important):\n\t\t\t\tyour **username** (defaults to discord username)(use && for multiple usernames)\n\t\t\t\t**1v1**, **2v2**(defaults to **1v1**)\n\t\t\t\t**eu, us, sea** (defaults to all)\n\t\t\t\t**--more** (for more results that contain username)\n\t\t\t\t**--exact** (for only exact username matches)\n\t\t\t\t**--first** (for the first result) (defaults to --first)\n\t\t\t\t**--all** (for all exact, first and more results)"
         functions['queue'] = "See who of the top 100 players is playing ranked (brawlmance.com)\n\t\t\tArguments (order not important):\n\t\t\t\t**1v1**, **2v2**(defaults to **1v1**)\n\t\t\t\t**eu, us, sea** (defaults to eu)"
         functions['help'] = "See this help text \n\t\t\tArguments:\n\t\t\t\t**command** (defaults to all commands)"
         functions['stats'] = "Get stats for a character\n\t\t\tArguments:\n\t\t\t\t**Character name** (required)"
@@ -281,6 +285,6 @@ def on_ready():
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)
-    print('------')
+    print('-----------------')
 
 client.run()
