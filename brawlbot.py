@@ -94,7 +94,8 @@ def on_message(message):
                             # add more results to the list                        
                             for user in users_temp:
                                 if(user_name.lower() in user.text.lower().split(" ")):
-                                    users.append(user)
+                                    if(len(users) < (12 / len(regions))):
+                                        users.append(user)
 
                             
                         if not users:
@@ -273,7 +274,7 @@ def on_message(message):
         functions['weapons'] = "Get weapons for a character\n\t\t\tArguments:\n\t\t\t\t**Character name** (defaults to all characters)"
         functions['links'] = "See useful links for brawlhalla \n\t\t\tArguments:\n\t\t\t\t**site** (defaults to all useful sites)"
         
-        reply = "**HELP** for brawlbot v1.0\n\n"
+        reply = "**HELP** for brawlbot v1.1\n\n"
         for key,value in functions.iteritems():
             if (key in options or not options):
                 reply += "**!" + key + "**:\t" + value + "\n\n"
